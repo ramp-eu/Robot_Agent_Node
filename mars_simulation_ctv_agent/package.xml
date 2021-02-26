@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>mars_simulation_ctv_agent</name>
+  <version>0.0.0</version>
+  <description>The mars_simulation_ctv_agent package</description>
+
+  <maintainer email="marc.hantzsch@iml.fraunhofer.de">Marc Hantzsch</maintainer>
+  <license>TODO</license>
+  <author email="marc.hantzsch@iml.fraunhofer.de">Marc Hantzsch</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <depend>roscpp</depend>
+  <depend>rospy</depend>
+  <depend>dynamic_reconfigure</depend>
+  <depend>tf</depend>
+  <depend>angles</depend>
+  <depend>geometry_msgs</depend>
+  <depend>nav_msgs</depend>
+  <depend>sensor_msgs</depend>
+  <depend>mars_common</depend>
+  <depend>mars_agent_physical_robot_msgs</depend>
+  <depend>industrial_msgs</depend>
+
+
+  <!-- The export tag contains other, unspecified, tags -->
+  <export>
+    <!-- Other tools can request additional information be placed here -->
+
+  </export>
+</package>
