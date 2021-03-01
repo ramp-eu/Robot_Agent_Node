@@ -112,7 +112,7 @@ Starts the RAN node for one robot. Each robot needs an individual RAN. All neede
   </include>
 ```
 
-Starts a transformation and a localization for the robot in the simulation. Dont't change this lines 
+Starts a transformation and a localization for the robot in the simulation. Don't change this lines 
 ```xml
 <node pkg="tf2_ros" type="static_transform_publisher" name="link1_broadcaster" args="0 0 0 0 0 0 1 map robot_1/odom" />
 
@@ -130,7 +130,7 @@ Starts a transformation and a localization for the robot in the simulation. Dont
 
 The following parameters are used to configure the RAN node. The parameters are stored inside a robot description launch file which will be include in the RAN launch file.
 
-Describes the the type of the robot. This parameter is node further specified or used at the moment. Content is ignored. 
+Describes the the type of the robot. This parameter is not further specified or used at the moment. Content is ignored. 
 
 ```xml
 <param name="type" value="default"/>
@@ -237,7 +237,7 @@ Maximum angular brake acceleration of the robot in rad/s².
 <param name="max_neg_ang_acc" value="0.5"/>
 ```
 
-This parameter is node further specified or used at the moment.
+This parameter is not further specified or used at the moment.
 ```xml
 <param name="velocity_control_sensitivity" value="1.0"/>
 ```
@@ -257,12 +257,12 @@ Describes the battery max voltage in volt (V). Parameter not used.
 <param name="batt_max_voltage" value="1.0"/>
 ```
 
-Describes the Vendor. This parameter is node further specified or used at the moment.
+Describes the vendor. This parameter is not further specified or used at the moment.
 ```xml
 <param name="vendor" value="default"/>
 ```
 
-This parameter is node further specified or used at the moment.
+This parameter is not further specified or used at the moment.
 ```xml
 <param name="action_capability" value="default"/>
 ```
