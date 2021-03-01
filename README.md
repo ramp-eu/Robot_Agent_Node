@@ -1,11 +1,5 @@
 # **R**obot **A**gent **N**ode - RAN
-
-| :books: [Documentation](https://tte-project1.readthedocs.io/en/latest/) |
-| --------------------------------------------- |
-
 ## Contents
-- [**R**obot **A**gent **N**ode - RAN](#robot-agent-node---ran)
-  - [Contents](#contents)
   - [Background](#background)
   - [Important](#important)
   - [Prerequisites](#prerequisites)
