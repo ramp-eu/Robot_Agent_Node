@@ -1,5 +1,5 @@
 # **R**obot **A**gent **N**ode - RAN
-## Contents
+- [**R**obot **A**gent **N**ode - RAN](#robot-agent-node---ran)
   - [Background](#background)
   - [Important](#important)
   - [Prerequisites](#prerequisites)
@@ -7,9 +7,21 @@
   - [Configuration](#configuration)
     - [RAN launch file](#ran-launch-file)
     - [RAN robot description](#ran-robot-description)
+  - [Interfaces](#interfaces)
+    - [RAN <-> TP](#ran---tp)
+    - [Interfaces consumed by RAN](#interfaces-consumed-by-ran)
+      - [MotionAssignment.msg](#motionassignmentmsg)
+        - [ROS Message](#ros-message)
+      - [CancelTask.msg](#canceltaskmsg)
+        - [ROS Message](#ros-message-1)
+    - [Interfaces produced by RAN](#interfaces-produced-by-ran)
+      - [Motion.msg](#motionmsg)
+        - [ROS Message](#ros-message-2)
+      - [AssignmentStatus.msg](#assignmentstatusmsg)
+        - [ROS Message](#ros-message-3)
+      - [RobotAgentDescription.msg](#robotagentdescriptionmsg)
+        - [ROS Message](#ros-message-4)
   - [License](#license)
-
-
 ## Background
 
 [OPIL](https://opil-documentation.readthedocs.io/) is the Open Platform for Innovations in Logistcs. This platform is meant to enable the development of value added services for the logistics sector in small-scale Industry 4.0 contexts such as those of manufacturing SMEs. In fact, it provides an easy deployable suite of applications for rapid development of complete logistics solutions, including components for task scheduling, path planning, automatic factory layout generation and navigation.
@@ -23,10 +35,24 @@ The RAN is currently used in OPIL, but the interface between RAN and TP and also
 You can find the deprecated interface msgs in the ros package: **mars_agent_physical_robot_msgs** 
 
 ## Prerequisites
-* ROS1 Meldic or Noetic
-* (Docker and docker-compose - in case you want to have an easy life ;))
-* Understanding defining material flows based on [lotlan](https://lotlan.readthedocs.io/en/latest/)
-
+* ROS1 Melodic or Noetic
+* Further ROS dependencies:  
+    * geometry-msgs
+    * tf
+    * tf2-geometry-msgs
+    * angles
+    * map-server
+    * tf2-eigen
+    * eigen-conversions
+    * geometry-msgs
+    * laser-geometry
+    * xacro
+    * robot-state-publisher
+    * fake-localization 
+    * visualization-msgs 
+    * amcl
+    * laser-geometry 
+    * industrial-msgs
 
 ## Install
 You have to do the following steps:
@@ -272,6 +298,194 @@ Weight of the robot without load.
 <param name="weight" value="1.0"/>
 ```
 
+## Interfaces
+
+Subsequently a detailed description of the exchanged entites is given. 
+
+### RAN <-> TP
+
+The following listing depicts the complete exchanged messages between RAN and TP. Subsequently all key value pairs will be explained in detail.
+
+```json
+{
+    "id": "robot_opil_v2",
+    "type": "ROBOT",
+    "action_assignment": {
+     ... },
+    "cancel_order": {
+     ... },
+    "current_motion": {
+     ... },
+    "motion_assignment": {
+     ... },
+    "robot_description": {
+     ... }
+}
+```
+
+### Interfaces consumed by RAN
+
+In the following all messages will be explained which are send by the TP. Messages might be based on some non-primitive types (e.g. mars_common_msgs/Id and others); These types are explained at the end of this document ([Used messages inside TP messages](#used-messages-inside-tp-messages)).
+
+#### MotionAssignment.msg
+
+The motion assignment tells the AGV the next destination and under which circumstances it can moves to this position.
+
+| Type                         | Variable         | Description                                                                                                                                                                                                       |
+| ---------------------------- | ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| mars_common_msgs/Id          | point_id         | ID of the next vertex / edge were the AGV should drive to.                                                                                                                                                        |
+| mars_common_msgs/Id          | task_id          | ID of the task to which the MotionAssignment belongs.                                                                                                                                                             |
+| mars_common_msgs/Id          | motion_id        | ID of the MotionAssignment. A new ID must be generated for each MotionAssignment.                                                                                                                                 |
+| bool                         | is_waypoint      | TRUE if the point is a waypoint (intermediate point along the path), FALSE if it is a goal.                                                                                                                       |
+| bool                         | use_orientation  | TRUE if the theta of the point has to be considered.                                                                                                                                                              |
+| geometry_msgs/Twist          | max_velocity     | Maximum allowed velocity in the current segment. Segment is defined by the **motion_area**. (For more information about the message visit: https://docs.ros.org/api/geometry_msgs/html/msg/Twist.html)            |
+| geometry_msgs/Accel          | max_acceleration | Maximum allowed acceleration in the current segment. Segment is defined by the **motion_area**. (For more information about the message visit: http://docs.ros.org/melodic/api/geometry_msgs/html/msg/Accel.html) |
+| geometry_msgs/PolygonStamped | motion_area      | Area in which the vehicle can move freely. (For more information about the message visit: http://docs.ros.org/melodic/api/geometry_msgs/html/msg/PolygonStamped.html)                                             |
+| Sequence                     | sequence         | Sequence number of the current MotionAssignment.                                                                                                                                                                  |
+
+##### ROS Message
+```ini
+Header header
+mars_common_msgs/Id point_id
+mars_common_msgs/Id task_id
+mars_common_msgs/Id motion_id
+geometry_msgs/Pose2D point
+# TRUE if the point is a waypoint, FALSE if it is a goal
+bool is_waypoint
+# TRUE if the theta of the point has to be considered
+bool use_orientation
+geometry_msgs/Twist max_velocity
+geometry_msgs/Accel max_acceleration
+# defines the area in which the robot can move
+geometry_msgs/PolygonStamped motion_area
+# the position of the assignment in the sequence
+Sequence sequence
+```
+
+#### CancelTask.msg
+
+The cancel task message cancels a whole task for an AGV.
+
+| Type                | Variable  | Description                                                                                                                 |
+| ------------------- | --------- | --------------------------------------------------------------------------------------------------------------------------- |
+| mars_common_msgs/Id | task_id   | ID of the task which should be canceled. If an Action- or MotionID is additionally given, only this part will be cancelled. |
+| mars_common_msgs/Id | action_id | NOT supported at the moment!                                                                                                |
+| mars_common_msgs/Id | motion_id | Not supported at the moment!                                                                                                |
+
+##### ROS Message
+
+```ini
+# task ID instead of action id because the message deletes the whole task
+# the task is a sequence of motions and actions
+mars_common_msgs/Id task_id
+mars_common_msgs/Id action_id
+mars_common_msgs/Id motion_id
+```
+
+### Interfaces produced by RAN
+
+#### Motion.msg
+
+The motion message is a combination of the current position of the AGV in the global coordinate system provided by S&P and the current velocity. 
+
+| Type                      | Variable         | Description                                                                                                                                          |
+| ------------------------- | ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| geometry_msgs/PoseStamped | current_position | Current position of the AGV. (For more information about the message visit: http://docs.ros.org/melodic/api/geometry_msgs/html/msg/PoseStamped.html) |
+| geometry_msgs/Twist       | current_velocity | Current velocity of the AGV. (For more information about the message visit: https://docs.ros.org/api/geometry_msgs/html/msg/Twist.html)              |
+
+##### ROS Message
+
+```ini
+geometry_msgs/PoseStamped current_position
+geometry_msgs/Twist current_velocity
+```
+
+#### AssignmentStatus.msg
+
+The assignment status gives you an overview which task is currently executed by the AGV and which was the last finished task.
+
+| Type                         | Variable             | Description                                           |
+| ---------------------------- | -------------------- | ----------------------------------------------------- |
+| mars_common_msgs/Id          | current_task_id      | Id of the current task which is executed.             |
+| mars_common_msgs/Id          | current_motion_id    | Id of the current MotionAssignment which is executed. |
+| mars_common_msgs/Id          | current_action_id    | Id of the current ActionAssignment which is executed. |
+| mars_common_msgs/Id          | last_finished_motion | Id of the last finished MotionAssignment.             |
+| mars_common_msgs/Id          | last_finished_action | Id of the last finished ActionAssignment.             |
+| geometry_msgs/PolygonStamped | footprint            | Current footprint of the AGV, including load.         |
+
+##### ROS Message
+
+```ini
+mars_common_msgs/Id current_task_id
+mars_common_msgs/Id current_motion_id
+mars_common_msgs/Id current_action_id
+mars_common_msgs/Id last_finished_motion
+mars_common_msgs/Id last_finished_action
+geometry_msgs/PolygonStamped footprint
+```
+
+#### RobotAgentDescription.msg
+
+This message describes the AGVs footprint, kinematic and the capabilities like lifting operations. 
+
+| Type                         | Variable          | Description                                                                                                                                                                                                                                        |
+| ---------------------------- | ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| mars_common_msgs/Id          | robot_id          | ID of the robot                                                                                                                                                                                                                                    |
+| VehicleType                  | type              | Defines the type of the AGV                                                                                                                                                                                                                        |
+| geometry_msgs/PolygonStamped | footprint         | The footprint is the contour of the mobile base. In ROS, it is a two dimensional array of the form [x0, y0],[x1, y1], ..., [xn, yn]]. The origin of the coordinates should be the center of the robot (center of rotation for differential drive). |
+| float32                      | min_height        | Minimal height of the AGV in meter.                                                                                                                                                                                                                |
+| float32                      | max_height        | Maximal height of the AGV in meter.                                                                                                                                                                                                                |
+| float32                      | payload           | Maximum Payload which can be carried by the AGV in kilogram.                                                                                                                                                                                       |
+| float32                      | max_pos_x_vel     | Maximum positive velocity in driving direction in m/s.                                                                                                                                                                                             |
+| float32                      | max_neg_x_vel     | Maximum negative speed in reverse direction in m/s.                                                                                                                                                                                                |
+| float32                      | max_pos_x_acc     | Maximum positive acceleration in driving direction in m/s².                                                                                                                                                                                        |
+| float32                      | max_neg_x_acc     | Maximum negative acceleration in driving direction in m/s².                                                                                                                                                                                        |
+| float32                      | max_pos_y_vel     | Maximum positive velocity in y direction for omnidirectional AGV in m/s.                                                                                                                                                                           |
+| float32                      | max_neg_y_vel     | Maximum negative velocity in y direction for omnidirectional AGV in m/s.                                                                                                                                                                           |
+| float32                      | max_pos_y_acc     | Maximum positive acceleration in y direction for omnidirectional AGV in m/s².                                                                                                                                                                      |
+| float32                      | max_neg_y_acc     | Maximum negative acceleration in y direction for omnidirectional AGV in m/s².                                                                                                                                                                      |
+| float32                      | max_pos_ang_v     | Maximum positive angular velocity in m/s.                                                                                                                                                                                                          |
+| float32                      | max_neg_ang_v     | Maximum negative angular velocity in m/s.                                                                                                                                                                                                          |
+| float32                      | max_pos_ang_a     | Maximum positive angular acceleration in m/s².                                                                                                                                                                                                     |
+| float32                      | max_neg_ang_a     | Maximum negative angular acceleration in m/s².                                                                                                                                                                                                     |
+| float32                      | velocity_cont     | ???                                                                                                                                                                                                                                                |
+| float32                      | min_turning_r     | Turning radius in meter. For differential drives it is zero!                                                                                                                                                                                       |
+| float32                      | batt_capacity     | Maximum capacity of the battery in Ah.                                                                                                                                                                                                             |
+| float32                      | batt_max_volt     | Maximum voltage of the battery in V.                                                                                                                                                                                                               |
+| float32                      | weight            | Weight of the AGV in kg.                                                                                                                                                                                                                           |
+| string                       | vendor            | Vendor of the AGV.                                                                                                                                                                                                                                 |
+| RobotAction []               | action_capability | A list of Actions which can be performed by the AGV.                                                                                                                                                                                               |
+
+##### ROS Message
+
+```ini
+mars_common_msgs/Id robot_id
+VehicleType type
+geometry_msgs/PolygonStamped footprint
+float32 min_height
+float32 max_height
+float32 payload
+float32 max_pos_x_vel
+float32 max_neg_x_vel
+float32 max_pos_x_acc
+float32 max_neg_x_acc
+float32 max_pos_y_vel
+float32 max_neg_y_vel
+float32 max_pos_y_acc
+float32 max_neg_y_acc
+float32 max_pos_ang_vel
+float32 max_neg_ang_vel
+float32 max_pos_ang_acc
+float32 max_neg_ang_acc
+float32 velocity_control_sensitivity
+float32 min_turning_radius
+float32 batt_capacity
+float32 batt_max_voltage
+float32 weight
+string vendor 
+RobotAction[] action_capability
+
+```
 
 ## License
 [APACHE2](LICENSE) ©
