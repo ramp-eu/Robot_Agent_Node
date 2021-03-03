@@ -14,13 +14,13 @@
 
 [OPIL](https://opil-documentation.readthedocs.io/) is the Open Platform for Innovations in Logistcs. This platform is meant to enable the development of value added services for the logistics sector in small-scale Industry 4.0 contexts such as those of manufacturing SMEs. In fact, it provides an easy deployable suite of applications for rapid development of complete logistics solutions, including components for task scheduling, path planning, automatic factory layout generation and navigation.
 
-This module is part of the TaskPlanner (TP). TP is one of the three OPIL Components and Functional blocks which this 3rd Layer (mod.sw.tp) is made of. Regarding the OPIL architecture, this node consists of two different sub-modules:
-
-Firstly, the Task Supervisor (mod.sw.tp.ts) monitors the execution of the task dispatched to the agents (Robots). Secondly, the Motion Task Planning (mod.sw.tp.mtp) plans the motion tasks for the robot agents. Task Planner makes it possible for the different components to communicate with each other and be composed into full-fledged logistic system in a manufacturing environment.
+The RAN (Robot Agent Node) is located between OPIL and the Robot Hardware. It provides two main functionalities: it manages robot navigation, based on ROS, and works as an interface between the robot hardware and the OPIL Cyber Physical Middleware. In order to accomplish the second functionality, the RAN "translates" and adapts Message entities into something understandable by the AGV. Regarding the navigation, a simple PID controller is implemented. It navigates the AGV straight along a line between two received intermediate points by TP. In case a twist is needed, the RAN stops the AGV on a intermediate point, turns the robot in the direction of the next point and proceed with the navigation along the line. 
 
 ## Important
 
-The RAN is currently used in OPIL, but the interface between RAN and TP and also the RAN ROS node are discontinued. The interface will be replaced by the VD(M)A 5050 standard interface for AGVs in version 1.1. The replacement take place in a future TP version.
+The RAN is currently used in OPIL, but the interface between RAN and TP and also the RAN ROS node are discontinued. The interface will be replaced by the VD(M)A 5050 standard interface for AGVs in version 1.1. The replacement take place in a future TP version. 
+
+You can find the deprecated interface msgs in the ros package: **mars_agent_physical_robot_msgs** 
 
 ## Prerequisites
 * ROS1 Meldic or Noetic
@@ -46,7 +46,7 @@ Important: If you want to use the RAN for testing on the same machine as TP, ple
 
 ## Configuration
 
-The RAN consists of two configuration files, the launch file which configures the ros node and the robot description which describes the capabilities of the robot platform. 
+The RAN (ros node name: mars_simulation_ctv_agent) consists of two configuration files, the launch file which configures the ros node and the robot description which describes the capabilities of the robot platform. 
 ### RAN launch file
 
 The following parameters are used to configure the RAN node. 
